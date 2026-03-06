@@ -102,7 +102,7 @@ const GeneratePage = () => {
 
             {/* Download preview */}
             <button
-              onClick={() => downloadImage(generatedImage, `${style.name}_preview.jpg`)}
+              onClick={() => downloadImageWithWatermark(generatedImage, `${style.name}_preview.jpg`)}
               className="w-full mb-3 bg-secondary text-foreground rounded-2xl py-3 text-[14px] font-semibold transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" />
