@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { allStyles } from '@/data/hairStyles';
 import { ChevronLeft, Check, CreditCard, Sparkles, Loader2, Download } from 'lucide-react';
 import { generateHairImage } from '@/lib/generateImage';
-import { downloadImage } from '@/lib/downloadImage';
 import { useToast } from '@/hooks/use-toast';
+import JSZip from 'jszip';
 
 const shotLabels = [
   { label: '정면 기본 컷', description: '얼굴 정면에서 본 스타일' },
