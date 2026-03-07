@@ -224,6 +224,12 @@ const PurchasePage = () => {
               </p>
             </div>
 
+            {copyrightText && (
+              <div className="mt-4 text-center">
+                <p className="text-[12px] text-muted-foreground">{copyrightText}</p>
+              </div>
+            )}
+
             <button
               onClick={() => navigate('/')}
               className="w-full mt-4 bg-secondary text-foreground rounded-2xl py-4 text-[15px] font-bold transition-all duration-200 active:scale-[0.98]"
