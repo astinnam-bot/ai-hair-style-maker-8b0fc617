@@ -2,3 +2,6 @@ project_id = "fxleegdydacypijrjtuc"
 
 [functions.generate-hair-image]
 verify_jwt = false
+
+[functions.generate-thumbnails]
+verify_jwt = false
