@@ -13,6 +13,43 @@ const shotLabels = [
   { label: '후면 롱샷', description: '뒷모습에서 본 전체 스타일' },
 ];
 
+const allShotLabels = [
+  ...shotLabels,
+  { label: '4컷 병합 이미지', description: '4가지 각도를 한 장에 담은 이미지' },
+];
+
+async function createMergedImage(images: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const imgElements: HTMLImageElement[] = [];
+    let loaded = 0;
+    images.forEach((src, i) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        loaded++;
+        if (loaded === images.length) {
+          // 2x2 grid
+          const cellW = imgElements[0].naturalWidth;
+          const cellH = imgElements[0].naturalHeight;
+          const canvas = document.createElement('canvas');
+          canvas.width = cellW * 2;
+          canvas.height = cellH * 2;
+          const ctx = canvas.getContext('2d')!;
+          imgElements.forEach((el, idx) => {
+            const col = idx % 2;
+            const row = Math.floor(idx / 2);
+            ctx.drawImage(el, col * cellW, row * cellH, cellW, cellH);
+          });
+          resolve(canvas.toDataURL('image/jpeg', 0.92));
+        }
+      };
+      img.onerror = reject;
+      imgElements[i] = img;
+      img.src = src;
+    });
+  });
+}
+
 const PurchasePage = () => {
   const navigate = useNavigate();
   const { styleId } = useParams<{ styleId: string }>();
@@ -42,9 +79,15 @@ const PurchasePage = () => {
   const handlePurchase = async () => {
     setIsProcessing(true);
     try {
-      // Pass previewImage as reference so the 4 shots maintain the same person
       const images = await generateHairImage(style.prompt, 4, previewImage, copyrightText || undefined);
-      setGeneratedImages(images);
+      // Create merged 5th image from 4 shots
+      let mergedUrl = '';
+      try {
+        mergedUrl = await createMergedImage(images);
+      } catch (e) {
+        console.error('Merge failed', e);
+      }
+      setGeneratedImages(mergedUrl ? [...images, mergedUrl] : images);
       setIsPurchased(true);
     } catch (err: any) {
       toast({
@@ -87,9 +130,9 @@ const PurchasePage = () => {
             )}
 
             <div className="bg-card rounded-2xl border border-border p-5 mb-5">
-              <p className="text-[15px] font-bold text-foreground mb-4">포함된 이미지 4장</p>
+              <p className="text-[15px] font-bold text-foreground mb-4">포함된 이미지 5장</p>
               <div className="flex flex-col gap-3">
-                {shotLabels.map((shot, i) => (
+                {allShotLabels.map((shot, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Check className="w-3 h-3 text-primary" />
@@ -143,7 +186,7 @@ const PurchasePage = () => {
                 <span className="text-[24px] font-bold text-foreground">₩5,500</span>
               </div>
               <p className="text-[12px] text-muted-foreground mt-2">
-                워터마크 없는 고화질 이미지 4장이 제공됩니다
+                워터마크 없는 고화질 이미지 5장이 제공됩니다 (상세 4장 + 병합 1장)
               </p>
             </div>
 
@@ -155,7 +198,7 @@ const PurchasePage = () => {
               {isProcessing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  이미지 생성 중... (4장)
+                  이미지 생성 중... (5장)
                 </>
               ) : (
                 <>
@@ -167,9 +210,20 @@ const PurchasePage = () => {
           </div>
         ) : (
           <div className="animate-slide-up">
+            {/* Merged image */}
+            {generatedImages[4] && (
+              <div className="mb-5 animate-fade-in" style={{ animationDelay: '0ms', animationFillMode: 'backwards' }}>
+                <div className="w-full aspect-square rounded-2xl overflow-hidden mb-2">
+                  <img src={generatedImages[4]} alt="병합 이미지" className="w-full h-full object-cover rounded-2xl" />
+                </div>
+                <p className="text-[13px] font-semibold text-foreground">4컷 병합 이미지</p>
+                <p className="text-[11px] text-muted-foreground">정면 · 45도 · 측면 · 후면 한눈에 보기</p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3 mb-5">
               {shotLabels.map((shot, i) => (
-                <div key={i} className="animate-fade-in" style={{ animationDelay: `${i * 150}ms`, animationFillMode: 'backwards' }}>
+                <div key={i} className="animate-fade-in" style={{ animationDelay: `${(i + 1) * 150}ms`, animationFillMode: 'backwards' }}>
                   <div className="w-full aspect-[3/4] rounded-2xl relative overflow-hidden mb-2">
                     {generatedImages[i] ? (
                       <img src={generatedImages[i]} alt={shot.label} className="w-full h-full object-cover rounded-2xl" />
@@ -194,7 +248,8 @@ const PurchasePage = () => {
                       const res = await fetch(img);
                       const blob = await res.blob();
                       const ext = blob.type.includes("png") ? "png" : "jpg";
-                      zip.file(`${style.name}_${shotLabels[i].label}.${ext}`, blob);
+                      const label = i < 4 ? shotLabels[i].label : '4컷_병합';
+                      zip.file(`${style.name}_${label}.${ext}`, blob);
                     })
                   );
                   const content = await zip.generateAsync({ type: "blob" });
@@ -219,7 +274,7 @@ const PurchasePage = () => {
             <div className="bg-secondary rounded-2xl p-4">
               <p className="text-[13px] text-foreground font-semibold mb-1">✅ 결제가 완료되었습니다</p>
               <p className="text-[12px] text-muted-foreground">
-                {style.name} 스타일의 상세 4컷이 생성되었습니다.
+                {style.name} 스타일의 상세 5장이 생성되었습니다.
                 고화질 워터마크 없는 이미지를 확인하세요.
               </p>
             </div>
