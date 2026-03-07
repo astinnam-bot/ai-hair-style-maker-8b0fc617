@@ -92,7 +92,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, count = 1, referenceImage } = await req.json();
+    const { prompt, count = 1, referenceImage, copyrightText } = await req.json();
 
     const COMET_API_KEY = Deno.env.get("COMET_API_KEY");
     if (!COMET_API_KEY) throw new Error("COMET_API_KEY is not configured");

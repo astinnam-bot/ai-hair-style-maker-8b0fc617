@@ -43,7 +43,7 @@ const PurchasePage = () => {
     setIsProcessing(true);
     try {
       // Pass previewImage as reference so the 4 shots maintain the same person
-      const images = await generateHairImage(style.prompt, 4, previewImage);
+      const images = await generateHairImage(style.prompt, 4, previewImage, copyrightText || undefined);
       setGeneratedImages(images);
       setIsPurchased(true);
     } catch (err: any) {
