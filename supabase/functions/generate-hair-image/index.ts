@@ -6,17 +6,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Variety traits to randomize model appearance
+// Variety traits to randomize model appearance — all in English for the AI model
 const modelTraits = {
   male: {
-    ages: ["20대 초반", "20대 중반", "20대 후반", "30대 초반", "30대 중반"],
-    faces: ["둥근 얼굴형", "갸름한 얼굴형", "각진 얼굴형", "타원형 얼굴형"],
-    builds: ["슬림한 체형", "보통 체형", "건장한 체형"],
+    ages: ["early 20s", "mid 20s", "late 20s", "early 30s", "mid 30s", "late 30s"],
+    faces: ["round face shape", "oval face shape", "square jawline", "angular face with high cheekbones", "soft diamond-shaped face"],
+    skins: ["fair skin", "light tan skin", "warm medium skin tone", "slightly tanned skin"],
+    builds: ["slim build", "average build", "athletic muscular build", "broad-shouldered build"],
+    vibes: ["calm relaxed expression", "confident sharp gaze", "friendly warm smile", "serious editorial expression", "playful youthful look"],
   },
   female: {
-    ages: ["20대 초반", "20대 중반", "20대 후반", "30대 초반", "30대 중반"],
-    faces: ["둥근 얼굴형", "갸름한 얼굴형", "하트형 얼굴형", "타원형 얼굴형"],
-    builds: ["슬림한 체형", "보통 체형"],
+    ages: ["early 20s", "mid 20s", "late 20s", "early 30s", "mid 30s"],
+    faces: ["round soft face", "oval face shape", "heart-shaped face", "V-line jawline", "small delicate face with high cheekbones"],
+    skins: ["porcelain fair skin", "light natural skin", "warm honey skin tone", "slightly tanned glowing skin"],
+    builds: ["slim petite build", "average build", "tall slender build"],
+    vibes: ["elegant poised expression", "cute bright smile", "chic cool gaze", "natural effortless look", "dreamy soft expression"],
   },
 };
 
@@ -29,8 +33,11 @@ function buildVarietyPrompt(basePrompt: string): string {
   const traits = isMale ? modelTraits.male : modelTraits.female;
   const age = pickRandom(traits.ages);
   const face = pickRandom(traits.faces);
+  const skin = pickRandom(traits.skins);
   const build = pickRandom(traits.builds);
-  return `${basePrompt}. The model is a Korean ${isMale ? "man" : "woman"} in their ${age} with ${face} and ${build}. Unique distinctive facial features.`;
+  const vibe = pickRandom(traits.vibes);
+  const uniqueId = Math.random().toString(36).substring(2, 8);
+  return `${basePrompt}. IMPORTANT: Generate a UNIQUE and DISTINCTIVE person, NOT a generic model. The model is a Korean ${isMale ? "man" : "woman"} in their ${age}, with a ${face}, ${skin}, ${build}, and a ${vibe}. This person has unique individual features that make them look like a real specific person (model ID: ${uniqueId}). Do NOT reuse the same face from previous generations.`;
 }
 
 function extractImageUrl(choice: any): string | null {
