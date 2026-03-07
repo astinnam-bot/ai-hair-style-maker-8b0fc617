@@ -22,7 +22,14 @@ const PurchasePage = () => {
   const [isPurchased, setIsPurchased] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [affiliation, setAffiliation] = useState('');
+  const [initials, setInitials] = useState('');
   const { toast } = useToast();
+
+  const currentYear = new Date().getFullYear();
+  const copyrightText = affiliation || initials
+    ? `© ${currentYear}${affiliation ? ` ${affiliation}` : ''}${initials ? ` ${initials}` : ''}. All Rights Reserved.`
+    : '';
 
   if (!style) {
     return (
@@ -93,6 +100,40 @@ const PurchasePage = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Affiliation & Initials (optional) */}
+            <div className="bg-card rounded-2xl border border-border p-5 mb-5">
+              <p className="text-[15px] font-bold text-foreground mb-1">저작권 정보 <span className="text-muted-foreground font-normal text-[12px]">(선택사항)</span></p>
+              <p className="text-[12px] text-muted-foreground mb-4">입력하시면 이미지 하단에 저작권 문구가 표시됩니다.</p>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className="text-[13px] text-muted-foreground mb-1 block">소속</label>
+                  <input
+                    type="text"
+                    value={affiliation}
+                    onChange={(e) => setAffiliation(e.target.value.slice(0, 50))}
+                    placeholder="예: Juno Hair"
+                    className="w-full bg-secondary text-foreground rounded-xl px-4 py-3 text-[14px] placeholder:text-muted-foreground/50 outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] text-muted-foreground mb-1 block">이니셜 (지점명 등)</label>
+                  <input
+                    type="text"
+                    value={initials}
+                    onChange={(e) => setInitials(e.target.value.slice(0, 30))}
+                    placeholder="예: Suji"
+                    className="w-full bg-secondary text-foreground rounded-xl px-4 py-3 text-[14px] placeholder:text-muted-foreground/50 outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  />
+                </div>
+                {copyrightText && (
+                  <div className="bg-secondary rounded-xl px-4 py-3">
+                    <p className="text-[12px] text-muted-foreground">미리보기:</p>
+                    <p className="text-[13px] text-foreground font-medium mt-1">{copyrightText}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -182,6 +223,12 @@ const PurchasePage = () => {
                 고화질 워터마크 없는 이미지를 확인하세요.
               </p>
             </div>
+
+            {copyrightText && (
+              <div className="mt-4 text-center">
+                <p className="text-[12px] text-muted-foreground">{copyrightText}</p>
+              </div>
+            )}
 
             <button
               onClick={() => navigate('/')}
