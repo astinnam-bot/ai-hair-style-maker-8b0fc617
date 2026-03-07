@@ -92,7 +92,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, count = 1, referenceImage } = await req.json();
+    const { prompt, count = 1, referenceImage, copyrightText } = await req.json();
 
     const COMET_API_KEY = Deno.env.get("COMET_API_KEY");
     if (!COMET_API_KEY) throw new Error("COMET_API_KEY is not configured");
@@ -122,12 +122,14 @@ serve(async (req) => {
     // If referenceImage is provided (from preview), use it for all 4 angles
     // Otherwise generate first image with variety, then use it as reference
     let currentReference = referenceImage || null;
+    const copyrightInstruction = copyrightText
+      ? ` Add a small, elegant copyright watermark text "${copyrightText}" at the bottom center of the image in a semi-transparent white font, like a professional photo watermark.`
+      : '';
 
     for (let i = 0; i < Math.min(count, 4); i++) {
       let messages: any[];
 
       if (currentReference) {
-        // Use reference image for consistent person across angles
         messages = [
           {
             role: "user",
@@ -135,18 +137,17 @@ serve(async (req) => {
               { type: "image_url", image_url: { url: currentReference } },
               {
                 type: "text",
-                text: `This is a reference photo of a hair model. Generate the EXACT SAME person with the EXACT SAME hairstyle, hair color, face, and clothing, but now shown from a ${angleDescriptions[i]}. The person MUST be wearing appropriate clothing at all times. Keep the same studio lighting and clean background. The person must look identical - same face shape, skin tone, hair texture, and style. Only the camera angle changes to ${angleDescriptions[i]}.`,
+                text: `This is a reference photo of a hair model. Generate the EXACT SAME person with the EXACT SAME hairstyle, hair color, face, and clothing, but now shown from a ${angleDescriptions[i]}. The person MUST be wearing appropriate clothing at all times. Keep the same studio lighting and clean background. The person must look identical - same face shape, skin tone, hair texture, and style. Only the camera angle changes to ${angleDescriptions[i]}.${copyrightInstruction}`,
               },
             ],
           },
         ];
       } else {
-        // First image with randomized model variety
         const variedPrompt = buildVarietyPrompt(prompt);
         messages = [
           {
             role: "user",
-            content: `Generate a photorealistic hair model image: ${variedPrompt}. The image should look like a professional salon hair catalog photo with studio lighting and clean background.`,
+            content: `Generate a photorealistic hair model image: ${variedPrompt}. The image should look like a professional salon hair catalog photo with studio lighting and clean background.${copyrightInstruction}`,
           },
         ];
       }
