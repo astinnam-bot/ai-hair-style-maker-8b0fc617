@@ -61,18 +61,33 @@
 @layer utilities {
   .watermark {
     position: relative;
+    overflow: hidden;
+  }
+  .watermark::before,
+  .watermark::after {
+    position: absolute;
+    inset: -50%;
+    pointer-events: none;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    gap: 2rem;
+    transform: rotate(-30deg);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    line-height: 3.5;
+  }
+  .watermark::before {
+    content: 'HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI   HAIR MODEL AI';
   }
   .watermark::after {
-    content: '© HAIR MODEL AI';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-30deg);
-    font-size: 2rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.25);
-    pointer-events: none;
-    white-space: nowrap;
-    letter-spacing: 0.1em;
+    content: 'SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE   SAMPLE';
+    top: -30%;
   }
 }
