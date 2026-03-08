@@ -42,9 +42,20 @@ serve(async (req) => {
       }
     }
 
-    // Generate thumbnail image with retry
+    // Generate thumbnail image with retry and fallback
     let imageUrl: string | null = null;
     const maxRetries = 3;
+
+    // Clean prompt: remove contradictory instructions
+    const cleanPrompt = prompt
+      .replace(/studio lighting/gi, 'natural lighting')
+      .replace(/clean background/gi, '');
+
+    const prompts = [
+      `Generate an image of a hair model: ${cleanPrompt}. Show only the head and upper shoulders, focused on the hairstyle. Photorealistic, high quality.`,
+      `Create a photo of a Korean hair model: ${cleanPrompt}. Portrait photo, head and shoulders only.`,
+      `Hair model portrait photo: ${cleanPrompt}. Photorealistic.`,
+    ];
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const response = await fetch("https://api.cometapi.com/v1/chat/completions", {
@@ -59,7 +70,7 @@ serve(async (req) => {
           messages: [
             {
               role: "user",
-              content: `Generate a photorealistic hair model image: ${prompt}. The image should look like a professional salon hair catalog photo with studio lighting and clean background. Show only the head and upper shoulders, focused on the hairstyle.`,
+              content: prompts[attempt] || prompts[prompts.length - 1],
             },
           ],
         }),
