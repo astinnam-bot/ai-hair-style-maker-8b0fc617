@@ -93,37 +93,6 @@ const StyleListPage = () => {
         <p className="text-muted-foreground text-[14px] mt-1">
           스타일을 선택하고 AI 모델을 생성하세요
         </p>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 mt-3">
-          {missingCount > 0 && (
-            <button
-              onClick={generateAllThumbnails}
-              disabled={bulkGenerating}
-              className="bg-primary text-primary-foreground rounded-xl px-4 py-2 text-[13px] font-semibold flex items-center gap-2 disabled:opacity-50 transition-all"
-            >
-              {bulkGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  생성 중...
-                </>
-              ) : (
-                <>
-                  <ImagePlus className="w-4 h-4" />
-                  썸네일 생성 ({missingCount}개)
-                </>
-              )}
-            </button>
-          )}
-          <button
-            onClick={regenerateAllThumbnails}
-            disabled={bulkGenerating}
-            className="bg-secondary text-foreground rounded-xl px-4 py-2 text-[13px] font-semibold flex items-center gap-2 disabled:opacity-50 transition-all border border-border hover:border-primary/50"
-          >
-            <RefreshCw className="w-4 h-4" />
-            전체 재생성
-          </button>
-        </div>
       </header>
 
       <main className="flex-1 px-5 pb-10">
