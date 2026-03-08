@@ -1,11 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getStyles, categoryOptions, type Gender, type Category } from '@/data/hairStyles';
-import { ChevronLeft, Sparkles, Loader2, ImagePlus } from 'lucide-react';
+import { ChevronLeft, Sparkles, Loader2, ImagePlus, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import KakaoShareButton from '@/components/KakaoShareButton';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+interface PromptModifier {
+  id: string;
+  label: string;
+  emoji: string;
+  promptSuffix: string;
+}
+
+const promptModifiers: PromptModifier[] = [
+  { id: 'age20s', label: '20대로 변경', emoji: '👤', promptSuffix: 'The model must be a young person in their early-to-mid 20s with youthful features.' },
+  { id: 'cafe', label: '카페 배경', emoji: '☕', promptSuffix: 'The background should be a cozy stylish Korean cafe interior with warm lighting, wooden furniture, and plants. NOT a studio background.' },
+  { id: 'sns', label: 'SNS 자연스러운 포즈', emoji: '📸', promptSuffix: 'The pose should be natural and casual like an Instagram selfie or SNS lifestyle photo, slightly candid looking, not stiff studio pose.' },
+  { id: 'stylish', label: '센스있는 의상', emoji: '👗', promptSuffix: 'The model should wear trendy, fashionable, stylish Korean street fashion outfit that looks magazine-worthy and coordinated.' },
+];
 
 const StyleListPage = () => {
   const navigate = useNavigate();
@@ -20,8 +34,8 @@ const StyleListPage = () => {
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState<Record<string, boolean>>({});
   const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [activeModifiers, setActiveModifiers] = useState<Set<string>>(new Set());
 
-  // Load existing thumbnails from storage on mount
   useEffect(() => {
     loadExistingThumbnails();
   }, [gender, category]);
@@ -41,14 +55,31 @@ const StyleListPage = () => {
     setThumbnails(thumbMap);
   };
 
-  const generateThumbnail = async (styleId: string, prompt: string) => {
+  const toggleModifier = (id: string) => {
+    setActiveModifiers(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const getModifiedPrompt = (basePrompt: string) => {
+    const suffixes = promptModifiers
+      .filter(m => activeModifiers.has(m.id))
+      .map(m => m.promptSuffix);
+    return suffixes.length > 0 ? `${basePrompt}. ${suffixes.join(' ')}` : basePrompt;
+  };
+
+  const generateThumbnail = async (styleId: string, prompt: string, forceRegenerate = false) => {
     setGenerating(prev => ({ ...prev, [styleId]: true }));
     try {
+      const modifiedPrompt = getModifiedPrompt(prompt);
       const { data, error } = await supabase.functions.invoke('generate-thumbnails', {
-        body: { styleId, prompt },
+        body: { styleId, prompt: modifiedPrompt, forceRegenerate },
       });
       if (data?.url) {
-        setThumbnails(prev => ({ ...prev, [styleId]: data.url }));
+        setThumbnails(prev => ({ ...prev, [styleId]: `${data.url}?t=${Date.now()}` }));
       }
       if (error) console.error('Thumbnail gen error:', error);
     } catch (err) {
@@ -63,6 +94,14 @@ const StyleListPage = () => {
     const missing = styles.filter(s => !thumbnails[s.id]);
     for (const style of missing) {
       await generateThumbnail(style.id, style.prompt);
+    }
+    setBulkGenerating(false);
+  };
+
+  const regenerateAllThumbnails = async () => {
+    setBulkGenerating(true);
+    for (const style of styles) {
+      await generateThumbnail(style.id, style.prompt, true);
     }
     setBulkGenerating(false);
   };
@@ -90,26 +129,53 @@ const StyleListPage = () => {
           스타일을 선택하고 AI 모델을 생성하세요
         </p>
 
-        {/* Bulk generate button */}
-        {missingCount > 0 && (
+        {/* Prompt Modifier Chips */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {promptModifiers.map(mod => (
+            <button
+              key={mod.id}
+              onClick={() => toggleModifier(mod.id)}
+              className={`px-3 py-1.5 rounded-full text-[12px] font-medium transition-all duration-200 border ${
+                activeModifiers.has(mod.id)
+                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                  : 'bg-secondary text-muted-foreground border-border hover:border-primary/50'
+              }`}
+            >
+              {mod.emoji} {mod.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 mt-3">
+          {missingCount > 0 && (
+            <button
+              onClick={generateAllThumbnails}
+              disabled={bulkGenerating}
+              className="bg-primary text-primary-foreground rounded-xl px-4 py-2 text-[13px] font-semibold flex items-center gap-2 disabled:opacity-50 transition-all"
+            >
+              {bulkGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  생성 중...
+                </>
+              ) : (
+                <>
+                  <ImagePlus className="w-4 h-4" />
+                  썸네일 생성 ({missingCount}개)
+                </>
+              )}
+            </button>
+          )}
           <button
-            onClick={generateAllThumbnails}
+            onClick={regenerateAllThumbnails}
             disabled={bulkGenerating}
-            className="mt-3 bg-primary text-primary-foreground rounded-xl px-4 py-2 text-[13px] font-semibold flex items-center gap-2 disabled:opacity-50 transition-all"
+            className="bg-secondary text-foreground rounded-xl px-4 py-2 text-[13px] font-semibold flex items-center gap-2 disabled:opacity-50 transition-all border border-border hover:border-primary/50"
           >
-            {bulkGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                썸네일 생성 중...
-              </>
-            ) : (
-              <>
-                <ImagePlus className="w-4 h-4" />
-                전체 썸네일 생성 ({missingCount}개)
-              </>
-            )}
+            <RefreshCw className="w-4 h-4" />
+            전체 재생성
           </button>
-        )}
+        </div>
       </header>
 
       {/* Styles Grid */}

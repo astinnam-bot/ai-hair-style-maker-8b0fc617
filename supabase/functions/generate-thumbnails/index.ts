@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { styleId, styleName, prompt } = await req.json();
+    const { styleId, styleName, prompt, forceRegenerate } = await req.json();
 
     const COMET_API_KEY = Deno.env.get("COMET_API_KEY");
     if (!COMET_API_KEY) throw new Error("COMET_API_KEY is not configured");
@@ -27,17 +27,19 @@ serve(async (req) => {
       });
     }
 
-    // Check if thumbnail already exists
+    // Check if thumbnail already exists (skip if forceRegenerate)
     const filePath = `thumbnails/${styleId}.jpg`;
-    const { data: existing } = await supabase.storage.from("hair-images").list("thumbnails", {
-      search: `${styleId}.jpg`,
-    });
-
-    if (existing && existing.length > 0) {
-      const { data: urlData } = supabase.storage.from("hair-images").getPublicUrl(filePath);
-      return new Response(JSON.stringify({ url: urlData.publicUrl, cached: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!forceRegenerate) {
+      const { data: existing } = await supabase.storage.from("hair-images").list("thumbnails", {
+        search: `${styleId}.jpg`,
       });
+
+      if (existing && existing.length > 0) {
+        const { data: urlData } = supabase.storage.from("hair-images").getPublicUrl(filePath);
+        return new Response(JSON.stringify({ url: urlData.publicUrl, cached: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Generate thumbnail image
