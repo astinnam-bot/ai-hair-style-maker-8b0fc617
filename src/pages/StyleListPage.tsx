@@ -88,9 +88,10 @@ const StyleListPage = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground transition-colors"
+              className="flex items-center gap-1 bg-primary text-primary-foreground text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
             >
               <Home className="w-4 h-4" />
+              첫화면으로
             </button>
             <KakaoShareButton title={`${genderLabel} · ${catLabel}`} description="AI 헤어모델 스타일 목록" />
           </div>
