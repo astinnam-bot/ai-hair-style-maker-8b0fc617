@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { allStyles } from '@/data/hairStyles';
-import { ChevronLeft, Check, CreditCard, Sparkles, Loader2, Download } from 'lucide-react';
+import { ChevronLeft, Check, CreditCard, Sparkles, Loader2, Download, Home } from 'lucide-react';
 import KakaoShareButton from '@/components/KakaoShareButton';
 import { generateHairImage } from '@/lib/generateImage';
 import { useToast } from '@/hooks/use-toast';
@@ -112,7 +112,15 @@ const PurchasePage = () => {
             <ChevronLeft className="w-4 h-4" />
             뒤로
           </button>
-          <KakaoShareButton title={style?.name || '상세 컷 구매'} description="AI 헤어모델 상세 컷" />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground transition-colors"
+            >
+              <Home className="w-4 h-4" />
+            </button>
+            <KakaoShareButton title={style?.name || '상세 컷 구매'} description="AI 헤어모델 상세 컷" />
+          </div>
         </div>
         <h1 className="text-[24px] font-bold text-foreground">
           {isPurchased ? '구매 완료 🎉' : '상세 컷 구매'}
