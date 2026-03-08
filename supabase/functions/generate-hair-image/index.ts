@@ -46,11 +46,13 @@ function pickRandom<T>(arr: T[]): T {
 function cleanBasePrompt(prompt: string): string {
   return prompt
     .replace(/studio lighting/gi, "natural warm lighting")
-    .replace(/bright sheer curtain background/gi, "cozy stylish cafe background")
-    .replace(/clean background/gi, "cozy cafe background");
+    .replace(/bright sheer curtain background/gi, "")
+    .replace(/clean background/gi, "");
 }
 
-function buildVarietyPrompt(basePrompt: string): string {
+function buildVarietyPrompt(basePrompt: string, bgPrompt?: string): string {
+
+const backgroundDesc = bgPrompt || "cozy stylish cafe atmosphere with warm ambient lighting";
   const cleaned = cleanBasePrompt(basePrompt);
   const lowerPrompt = cleaned.toLowerCase();
   const isFemale = lowerPrompt.includes("female") || lowerPrompt.includes("woman") || lowerPrompt.includes("여성");
@@ -67,7 +69,7 @@ function buildVarietyPrompt(basePrompt: string): string {
   const isWestern = lowerPrompt.includes("western") || lowerPrompt.includes("caucasian") || lowerPrompt.includes("foreign");
   const ethnicityDesc = isWestern ? "Western Caucasian" : "Korean";
 
-  return `${cleaned}. IMPORTANT: Generate a UNIQUE and DISTINCTIVE person, NOT a generic model. The model is a ${ethnicityDesc} ${isMale ? "man" : "woman"} in their ${age}, with a ${face}, ${skin}, ${build}, and a ${vibe}. The person MUST be wearing a ${clothing}. NEVER generate a bare-shouldered or unclothed model. The background should be a cozy stylish cafe atmosphere with warm lighting. The pose should be natural and candid like an SNS Instagram photo, not stiff or overly posed. The outfit should be trendy and fashionable, looking stylish and well-coordinated. This person has unique individual features that make them look like a real specific person (model ID: ${uniqueId}). Do NOT reuse the same face from previous generations.`;
+  return `${cleaned}. IMPORTANT: Generate a UNIQUE and DISTINCTIVE person, NOT a generic model. The model is a ${ethnicityDesc} ${isMale ? "man" : "woman"} in their ${age}, with a ${face}, ${skin}, ${build}, and a ${vibe}. The person MUST be wearing a ${clothing}. NEVER generate a bare-shouldered or unclothed model. The background should be ${backgroundDesc}. The pose should be natural and candid like an SNS Instagram photo, not stiff or overly posed. The outfit should be trendy and fashionable, looking stylish and well-coordinated. This person has unique individual features that make them look like a real specific person (model ID: ${uniqueId}). Do NOT reuse the same face from previous generations.`;
 }
 
 function extractImageUrl(choice: any): string | null {
@@ -113,7 +115,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, count = 1, referenceImage, copyrightText } = await req.json();
+    const { prompt, count = 1, referenceImage, copyrightText, backgroundPrompt } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -156,17 +158,18 @@ serve(async (req) => {
               { type: "image_url", image_url: { url: currentReference } },
               {
                 type: "text",
-                text: `This is a reference photo of a hair model. Generate the EXACT SAME person with the EXACT SAME hairstyle, hair color, face, and clothing, but now shown from a ${angleDescriptions[i]}. The person MUST be wearing appropriate clothing at all times. Keep the same cozy cafe atmosphere background with warm lighting. The pose should be natural and candid like an SNS photo. The person must look identical - same face shape, skin tone, hair texture, and style. Only the camera angle changes to ${angleDescriptions[i]}.${copyrightInstruction}`,
+                text: `This is a reference photo of a hair model. Generate the EXACT SAME person with the EXACT SAME hairstyle, hair color, face, and clothing, but now shown from a ${angleDescriptions[i]}. The person MUST be wearing appropriate clothing at all times. Keep the same background atmosphere. The pose should be natural and candid like an SNS photo. The person must look identical - same face shape, skin tone, hair texture, and style. Only the camera angle changes to ${angleDescriptions[i]}.${copyrightInstruction}`,
               },
             ],
           },
         ];
       } else {
-        const variedPrompt = buildVarietyPrompt(prompt);
+        const bgDesc = backgroundPrompt || "cozy stylish cafe atmosphere with warm ambient lighting";
+        const variedPrompt = buildVarietyPrompt(prompt, backgroundPrompt);
         messages = [
           {
             role: "user",
-            content: `Generate a photorealistic hair model image: ${variedPrompt}. The image should look like a stylish SNS Instagram photo taken in a cozy cafe with warm ambient lighting. The pose should be natural and candid, not stiff. The outfit should be trendy and well-coordinated.${copyrightInstruction}`,
+            content: `Generate a photorealistic hair model image: ${variedPrompt}. The image should look like a stylish SNS Instagram photo with ${bgDesc}. The pose should be natural and candid, not stiff. The outfit should be trendy and well-coordinated.${copyrightInstruction}`,
           },
         ];
       }
