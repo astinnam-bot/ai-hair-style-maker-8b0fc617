@@ -79,7 +79,7 @@ const GeneratePage = () => {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1 text-primary text-sm font-semibold hover:text-primary/80 transition-colors"
+            className="flex items-center gap-1 bg-primary text-primary-foreground text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             뒤로
