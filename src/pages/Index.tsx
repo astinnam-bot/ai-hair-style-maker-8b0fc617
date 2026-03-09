@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Scissors } from 'lucide-react';
-import KakaoShareButton from '@/components/KakaoShareButton';
+
 
 const genderChoices = [
   { id: 'male', label: '남성', emoji: '👨', description: '남성 헤어스타일' },
