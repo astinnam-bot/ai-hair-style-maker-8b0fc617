@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { allStyles } from '@/data/hairStyles';
-import { ChevronLeft, Sparkles, Loader2,  } from '@/lib/generateImage';
+import { ChevronLeft, Sparkles, Loader2, Home } from 'lucide-react';
+import { generateHairImage } from '@/lib/generateImage';
 import KakaoShareButton from '@/components/KakaoShareButton';
-import { downloadImageWithW@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-const { styleId } = useParams<{ styleId: string }>();
+const GeneratePage = () => {
+  const navigate = useNavigate();
+  const { styleId } = useParams<{ styleId: string }>();
   const [searchParams] = useSearchParams();
   const age = searchParams.get('age') || '20s';
   const ethnicity = searchParams.get('ethnicity') || 'korean';
   const style = allStyles.find(s => s.id === styleId);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [backgrout { toast } = useToast();
+  const [background, setBackground] = useState<'cafe' | 'hairshop' | 'sns'>('cafe');
+  const { toast } = useToast();
 
   const backgroundOptions = [
     { id: 'cafe' as const, label: '☕ 카페배경', prompt: 'cozy stylish cafe atmosphere with warm ambient lighting' },
@@ -42,7 +45,6 @@ const { styleId } = useParams<{ styleId: string }>();
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    setGeneratedImage(null);
     try {
       const ageDesc = ageMap[age] || 'in their 20s';
       const ethnicityDesc = ethnicityMap[ethnicity] || 'Korean';
@@ -50,7 +52,6 @@ const { styleId } = useParams<{ styleId: string }>();
       const finalPrompt = `${style.prompt}, ${ethnicityDesc} person ${ageDesc}`;
       const images = await generateHairImage(finalPrompt, 1, undefined, undefined, bgOption.prompt);
       if (images.length > 0) {
-        // 바로 구매 페이지로 이동
         navigate(`/purchase/${style.id}`, {
           state: {
             previewImage: images[0],
@@ -74,7 +75,6 @@ const { styleId } = useParams<{ styleId: string }>();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="px-5 pt-14 pb-4">
         <div className="flex items-center justify-between mb-4">
           <button
@@ -105,45 +105,43 @@ const { styleId } = useParams<{ styleId: string }>();
 
       <main className="flex-1 px-5 pb-10">
         <div className="animate-fade-in">
-            {/* Background Options */}
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-foreground mb-3">배경 선택</p>
-              <div className="flex gap-2">
-                {backgroundOptions.map(opt => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setBackground(opt.id)}
-                    className={`flex-1 py-2.5 px-3 rounded-xl text-[13px] font-medium transition-all duration-200 border ${
-                      background === opt.id
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-secondary text-muted-foreground border-transparent hover:text-foreground'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-foreground mb-3">배경 선택</p>
+            <div className="flex gap-2">
+              {backgroundOptions.map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setBackground(opt.id)}
+                  className={`flex-1 py-2.5 px-3 rounded-xl text-[13px] font-medium transition-all duration-200 border ${
+                    background === opt.id
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-secondary text-muted-foreground border-transparent hover:text-foreground'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
-
-            {/* Generate Button */}
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full bg-primary text-primary-foreground rounded-2xl py-4 text-[16px] font-bold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  AI 모델 생성 중...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  AI 헤어모델 생성하기
-                </>
-              )}
-            </button>
           </div>
+
+          <button
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="w-full bg-primary text-primary-foreground rounded-2xl py-4 text-[16px] font-bold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                AI 모델 생성 중...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                AI 헤어모델 생성하기
+              </>
+            )}
+          </button>
+        </div>
       </main>
     </div>
   );
