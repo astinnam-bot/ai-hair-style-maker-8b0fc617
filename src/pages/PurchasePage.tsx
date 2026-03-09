@@ -155,33 +155,38 @@ const PurchasePage = () => {
   }
 
   const handlePurchase = async () => {
-    // TODO: 테스트 모드 - 결제 우회. 실제 운영 시 아래 주석 해제
-    setIsProcessing(true);
+    setIsPaymentLoading(true);
     try {
-      const images = await generateHairImage(
-        style!.prompt,
-        4,
-        previewImage,
-        copyrightText || undefined,
-        backgroundPrompt
-      );
+      // Save data to sessionStorage before redirect
+      if (copyrightText) sessionStorage.setItem('purchase_copyright', copyrightText);
+      if (backgroundPrompt) sessionStorage.setItem('purchase_bgPrompt', backgroundPrompt);
+      if (previewImage) sessionStorage.setItem('purchase_previewImage', previewImage);
 
-      let mergedUrl = '';
-      try {
-        mergedUrl = await createMergedImage(images);
-      } catch (e) {
-        console.error('Merge failed', e);
-      }
-      setGeneratedImages(mergedUrl ? [...images, mergedUrl] : images);
-      setIsPurchased(true);
-    } catch (err: any) {
-      toast({
-        title: '이미지 생성 실패',
-        description: err.message || '잠시 후 다시 시도해 주세요.',
-        variant: 'destructive',
+      const { loadTossPayments } = await import('@tosspayments/tosspayments-sdk');
+      const tossPayments = await loadTossPayments(TOSS_CLIENT_KEY);
+      const payment = tossPayments.payment({ customerKey: 'ANONYMOUS' });
+
+      const orderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      const currentUrl = window.location.origin + `/purchase/${styleId}`;
+
+      await payment.requestPayment({
+        method: 'CARD',
+        amount: { currency: 'KRW', value: PRICE },
+        orderId,
+        orderName: `${style!.name} 상세 컷 5장`,
+        successUrl: currentUrl + `?paymentKey={paymentKey}&orderId={orderId}&amount=${PRICE}`,
+        failUrl: currentUrl + `?fail=true&message={message}`,
       });
+    } catch (err: any) {
+      if (err?.code !== 'USER_CANCEL') {
+        toast({
+          title: '결제 실패',
+          description: err.message || '결제를 진행할 수 없어요.',
+          variant: 'destructive',
+        });
+      }
     } finally {
-      setIsProcessing(false);
+      setIsPaymentLoading(false);
     }
   };
 
@@ -317,7 +322,7 @@ const PurchasePage = () => {
               ) : (
                 <>
                   <CreditCard className="w-5 h-5" />
-                  ₩9,900 토스페이 결제하기
+                  ₩9,900 결재해요
                 </>
               )}
             </button>
