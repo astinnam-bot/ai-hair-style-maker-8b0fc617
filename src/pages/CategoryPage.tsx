@@ -1,7 +1,7 @@
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { categoryOptions, type Gender } from '@/data/hairStyles';
 import { ChevronLeft, Home } from 'lucide-react';
-import KakaoShareButton from '@/components/KakaoShareButton';
+
 
 const CategoryPage = () => {
   const navigate = useNavigate();
