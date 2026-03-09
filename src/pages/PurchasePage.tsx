@@ -204,18 +204,7 @@ const PurchasePage = () => {
     }
   };
 
-  // Handle payment failure redirect
-  useEffect(() => {
-    if (searchParams.get('fail') === 'true') {
-      const errorCode = searchParams.get('code');
-      const errorMessage = searchParams.get('message');
-      toast({
-        title: '결제 실패',
-        description: errorMessage || '결제가 취소되었거나 실패했습니다.',
-        variant: 'destructive',
-      });
-    }
-  }, []);
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
