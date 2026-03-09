@@ -245,6 +245,11 @@ const PurchasePage = () => {
           </div>
         ) : !isPurchased ? (
           <div className="animate-fade-in">
+            <div className="bg-primary/10 rounded-2xl p-5 mb-5">
+              <p className="text-[15px] font-bold text-foreground leading-relaxed">
+                미리보기로 제공해드린 사진이 마음에 드시면 결제버튼 눌러주세요!! 그러면 마음에 쏙 드는 5장의 사진을 제공해드려요!!
+              </p>
+            </div>
             {previewImage && (
               <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden mb-5 watermark">
                 <img src={previewImage} alt="미리보기" className="w-full h-full object-cover rounded-2xl" />
