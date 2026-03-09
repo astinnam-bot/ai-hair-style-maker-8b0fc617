@@ -108,7 +108,7 @@ const GeneratePage = () => {
             {/* Preview placeholder */}
             <div className="w-full aspect-[3/4] rounded-2xl bg-secondary flex flex-col items-center justify-center mb-6">
               <Sparkles className="w-12 h-12 text-muted-foreground mb-3" />
-              <p className="text-muted-foreground text-sm font-medium">AI 모델 이미지가 여기에 표시됩니다</p>
+              <p className="text-muted-foreground text-sm font-medium">AI 모델 이미지가 여기에 표시돼요</p>
             </div>
 
             {/* Background Options */}
