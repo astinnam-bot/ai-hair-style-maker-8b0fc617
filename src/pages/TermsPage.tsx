@@ -128,7 +128,7 @@ const TermsPage = () => {
           <section className="border-t border-border pt-4">
             <h2 className="text-base font-semibold text-foreground mb-2">고객센터 안내</h2>
             <p>• 이메일: aihairmuse@gmail.com</p>
-            <p>• 전화: 070-4063-9222</p>
+            <p>• 전화: 070-4063-9888</p>
             <p>• 운영시간: 평일 10:00 ~ 18:00 (주말·공휴일 휴무)</p>
           </section>
 
