@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Scissors } from 'lucide-react';
+import sample4cut from '@/assets/sample-4cut.jpg';
+import sampleGrid from '@/assets/sample-grid.webp';
 
 
 const genderChoices = [
