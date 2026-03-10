@@ -25,6 +25,7 @@ const App = () => (
           <Route path="/styles/:gender/:category" element={<StyleListPage />} />
           <Route path="/generate/:styleId" element={<GeneratePage />} />
           <Route path="/purchase/:styleId" element={<PurchasePage />} />
+          <Route path="/term" element={<TermsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
